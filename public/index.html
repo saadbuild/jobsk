@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%236c63ff%27/%3E%3Ctext x=%2750%27 y=%2768%27 font-size=%2760%27 font-family=%27Arial,sans-serif%27 font-weight=%27700%27 fill=%27white%27 text-anchor=%27middle%27%3EJ%3C/text%3E%3C/svg%3E"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jobsk — AI Job Agent</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <script>
+    // SESSION GUARD — redirect to login if not signed in.
+    // main.js separately calls /api/auth/verify on load and signs the user
+    // back out if the server no longer recognizes the token (e.g. the
+    // backend's database got reset) — see loadCurrentUser() in main.js.
+    if (!localStorage.getItem('jobsk_token')) {
+      window.location.href = 'pages/login.html';
+    }
+  </script>
+</head>
+<body>
+
+<!-- ═══════════════════ TOP BAR — menu button + Jobsk logo ═══════════════════ -->
+<header class="app-topbar">
+  <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="topbar-logo">
+    <div class="logo-box">
+      <svg width="30" height="30" viewBox="0 0 36 36">
+        <defs><linearGradient id="lgTop" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#6c63ff"/><stop offset="100%" stop-color="#f857a6"/></linearGradient></defs>
+        <rect width="36" height="36" rx="10" fill="url(#lgTop)"/>
+        <text x="18" y="25" text-anchor="middle" font-family="Inter,sans-serif" font-weight="800" font-size="18" fill="white">J</text>
+      </svg>
+    </div>
+    <div class="logo-name">job<span>sk</span></div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ═══════════════════ SIDEBAR — opens as a menu from the top-left button ═══════════════════ -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-head">
+      <span class="sidebar-head-label">Menu</span>
+      <button class="sidebar-close" onclick="closeSidebar()" aria-label="Close menu">✕</button>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="nav-group-label">Main</div>
+
+      <button class="nav-item active" onclick="go('home',this)">
+        <div class="ni-icon" style="background:#eef2ff">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6c63ff" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div class="ni-text">
+          <span class="ni-label">Home</span>
+          <span class="ni-sub">Dashboard overview</span>
+        </div>
+      </button>
+
+      <button class="nav-item" onclick="go('search',this)">
+        <div class="ni-icon" style="background:#f0fdf4">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <div class="ni-text">
+          <span class="ni-label">Job Search</span>
+          <span class="ni-sub">AI-powered search</span>
+        </div>
+      </button>
+
+      <button class="nav-item" onclick="go('platforms',this)">
+        <div class="ni-icon" style="background:#fdf4ff">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9333ea" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div class="ni-text">
+          <span class="ni-label">Platforms</span>
+          <span class="ni-sub">3 live · rest guide-only</span>
+        </div>
+        <span class="ni-badge purple">3</span>
+      </button>
+
+      <button class="nav-item" onclick="go('agent',this)">
+        <div class="ni-icon" style="background:#fff7ed">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1" fill="#ea580c"/></svg>
+        </div>
+        <div class="ni-text">
+          <span class="ni-label">AI Agent Chat</span>
+          <span class="ni-sub">Career assistant</span>
+        </div>
+        <span class="ni-live">Live</span>
+      </button>
+
+      <div class="nav-group-label">Tools</div>
+
+      <button class="nav-item" onclick="go('cv',this)">
+        <div class="ni-icon" style="background:#fef9c3">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        </div>
+        <div class="ni-text">
+          <span class="ni-label">My CV</span>
+          <span class="ni-sub">Upload and manage</span>
+        </div>
+      </button>
+
+      <button class="nav-item" onclick="go('alerts',this)">
+        <div class="ni-icon" style="background:#fce7f3">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#db2777" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <div class="ni-text">
+          <span class="ni-label">Job Alerts</span>
+          <span class="ni-sub">Email &amp; SMS notifications</span>
+        </div>
+        <span class="ni-badge pink" id="navAlertBadge" style="display:none">0</span>
+      </button>
+
+      <button class="nav-item" onclick="go('history',this)">
+        <div class="ni-icon" style="background:#eef2ff">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6c63ff" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="ni-text">
+          <span class="ni-label">Search History</span>
+          <span class="ni-sub">Your past searches</span>
+        </div>
+      </button>
+
+      <button class="nav-item" onclick="go('guides',this)">
+        <div class="ni-icon" style="background:#ecfdf5">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <div class="ni-text">
+          <span class="ni-label">Guides</span>
+          <span class="ni-sub">Platform how-tos</span>
+        </div>
+      </button>
+
+      <div class="nav-group-label">Account</div>
+
+      <button class="nav-item" onclick="go('notifications',this)">
+        <div class="ni-icon" style="background:#eff6ff">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div class="ni-text">
+          <span class="ni-label">Notifications</span>
+          <span class="ni-sub" id="navNotifSub">0 new</span>
+        </div>
+        <span class="ni-badge blue" id="navNotifBadge" style="display:none">0</span>
+      </button>
+
+      <button class="nav-item" onclick="go('settings',this)">
+        <div class="ni-icon" style="background:#f8fafc">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <div class="ni-text">
+          <span class="ni-label">Settings</span>
+          <span class="ni-sub">Profile and preferences</span>
+        </div>
+      </button>
+
+    </nav>
+
+    <div class="sb-user">
+      <div class="user-row">
+        <div class="user-av" id="userAvatar">··</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">Loading…</div>
+          <div class="user-email" id="userEmail"></div>
+        </div>
+        <button class="user-more" onclick="toggleUserMenu()">⋯</button>
+      </div>
+      <div class="user-dropdown" id="userDropdown" style="display:none">
+        <button onclick="go('settings',document.querySelector('[onclick*=settings]'))">⚙️ Settings</button>
+        <button onclick="signOut()">🚪 Sign out</button>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ═══════════════════ MAIN 70% ═══════════════════ -->
+  <main class="main">
+
+    <!-- ── HOME ── -->
+    <div class="screen active" id="s-home">
+      <div class="page-head">
+        <div><h1 id="homeGreeting">Good morning 👋</h1><p id="homeSub">Your agent checks for new matches every minute</p></div>
+        <button class="btn-primary" onclick="go('search',document.querySelector('[onclick*=\"search\"]'))">Find jobs now</button>
+      </div>
+      <div class="stat-row">
+        <div class="scard"><div class="scard-icon" style="background:#eef2ff;color:#6c63ff"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.35a2 2 0 0 1 1.8-2.15h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8a16 16 0 0 0 8.09 8.09l.61-.61a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div><div class="scard-val" style="color:#6c63ff" id="statSearches">0</div><div class="scard-label">Searches run</div><div class="scard-trend">All-time, this account</div></div>
+        <div class="scard"><div class="scard-icon" style="background:#f0fdf4;color:#16a34a"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div><div class="scard-val" style="color:#16a34a" id="statSources">3</div><div class="scard-label">Live sources connected</div><div class="scard-trend">Remotive, RemoteOK, Arbeitnow</div></div>
+        <div class="scard"><div class="scard-icon" style="background:#fce7f3;color:#db2777"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><div class="scard-val" style="color:#db2777" id="statNotifs">0</div><div class="scard-label">Notifications</div><div class="scard-trend" id="statNotifsSub">Unread</div></div>
+        <div class="scard"><div class="scard-icon" style="background:#fef9c3;color:#ca8a04"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="scard-val" style="color:#ca8a04" id="statMatch">—</div><div class="scard-label">CV match readiness</div><div class="scard-trend" id="statMatchSub">Upload a CV to see this</div></div>
+      </div>
+      <div class="agent-banner">
+        <div class="agent-banner-l"><div class="agent-pulse-dot"></div><div><div class="ab-title">Agent is running</div><div class="ab-sub">Checking Remotive, RemoteOK and Arbeitnow for new matches every minute — even when this tab is closed, as long as the backend server is running (see README)</div></div></div>
+        <div class="ab-timer" id="timer">Next scan in 0:60</div>
+      </div>
+      <div class="sec-title">Recent job matches</div>
+      <div class="job-list" id="homeJobs"></div>
+    </div>
+
+    <!-- ── SEARCH ── -->
+    <div class="screen" id="s-search">
+      <div class="page-head">
+        <div><h1>Job Search</h1><p>Pick platforms, set filters, run the ML agent</p></div>
+      </div>
+      <div class="engine">
+        <div class="eblock">
+          <div class="eblock-label"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Select sources <button class="sel-all" id="selAllBtn" onclick="selectAll()">Select all</button></div>
+          <div class="ppicker" id="ppicker">
+            <label class="pp"><input type="checkbox" value="remotive" checked onchange="countPlatforms()"><div class="pp-in"><div class="pp-logo" style="background:#7c3aed">Re</div><span>Remotive</span></div></label>
+            <label class="pp"><input type="checkbox" value="remoteok" checked onchange="countPlatforms()"><div class="pp-in"><div class="pp-logo" style="background:#111827">OK</div><span>RemoteOK</span></div></label>
+            <label class="pp"><input type="checkbox" value="arbeitnow" checked onchange="countPlatforms()"><div class="pp-in"><div class="pp-logo" style="background:#0ea5e9">Ar</div><span>Arbeitnow</span></div></label>
+          </div>
+          <div class="pcount" id="pcount">3 sources selected</div>
+          <p style="font-size:11.5px;color:#94a3b8;margin-top:8px">These are the only platforms with real, free, publicly available job-search APIs — see the Platforms tab and README for why Upwork, Fiverr, and LinkedIn aren't included here.</p>
+        </div>
+        <div class="eblock">
+          <div class="eblock-label"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Hours per week</div>
+          <div class="tgroup" id="hg"><button class="tbtn on" onclick="tgl(this,'hg')">Any</button><button class="tbtn" onclick="tgl(this,'hg')">Under 10h</button><button class="tbtn" onclick="tgl(this,'hg')">10–20h</button><button class="tbtn" onclick="tgl(this,'hg')">20–40h</button><button class="tbtn" onclick="tgl(this,'hg')">Full-time 40h+</button></div>
+        </div>
+        <div class="eblock">
+          <div class="eblock-label"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg> Job type</div>
+          <div class="tgroup" id="jg"><button class="tbtn on" onclick="tgl(this,'jg')">All types</button><button class="tbtn" onclick="tgl(this,'jg')">Hourly</button><button class="tbtn" onclick="tgl(this,'jg')">Fixed price</button><button class="tbtn" onclick="tgl(this,'jg')">Full-time</button><button class="tbtn" onclick="tgl(this,'jg')">Remote only</button></div>
+        </div>
+        <div class="eblock">
+          <div class="eblock-label"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Rate range ($/hr)</div>
+          <div class="rate-wrap"><input type="range" class="rslider" id="rmin" min="5" max="300" value="10" step="5" oninput="updRate()"/><input type="range" class="rslider" id="rmax" min="5" max="300" value="100" step="5" oninput="updRate()"/><div class="rate-val" id="rval">$10 — $100/hr</div></div>
+        </div>
+        <div class="eblock">
+          <div class="eblock-label"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Describe your skills or the job you want</div>
+          <div class="search-row-wrap"><input type="text" class="search-big" id="sq" placeholder="e.g.  Python developer, machine learning, data science..." onkeypress="if(event.key==='Enter')doSearch()"/><button class="btn-search" onclick="doSearch()">Search</button></div>
+          <div class="qtags"><span class="qt" onclick="qs('Python developer')">Python</span><span class="qt" onclick="qs('Machine learning engineer')">ML Engineer</span><span class="qt" onclick="qs('Web designer')">Web Design</span><span class="qt" onclick="qs('Data scientist')">Data Science</span><span class="qt" onclick="qs('Content writer')">Writing</span><span class="qt" onclick="qs('Video editor')">Video Editing</span><span class="qt" onclick="qs('Mobile app developer')">Mobile Dev</span><span class="qt" onclick="qs('AI chatbot developer')">AI/Chatbot</span></div>
+        </div>
+        <div class="eblock">
+          <div class="eblock-label"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Upload CV — ML extracts skills automatically</div>
+          <div class="cv-drop" id="cvDrop" onclick="document.getElementById('cvf').click()" ondragover="event.preventDefault();this.classList.add('dv')" ondragleave="this.classList.remove('dv')" ondrop="cvDropHandler(event)">
+            <div class="cv-drop-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6c63ff" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></div>
+            <div class="cv-drop-t">Drop CV here or click to upload</div>
+            <div class="cv-drop-s">PDF, DOCX, TXT — skills extracted automatically</div>
+            <input type="file" id="cvf" accept=".pdf,.docx,.txt" style="display:none" onchange="cvHandler(event)"/>
+          </div>
+        </div>
+        <button class="run-btn" onclick="doSearch()">🤖 Run ML Agent Search <span class="run-key">Enter ↵</span></button>
+        <div id="results" style="display:none"><div class="res-hdr">Found <strong id="rcnt">0</strong> matching jobs</div><div class="job-list" id="rlist"></div></div>
+      </div>
+    </div>
+
+    <!-- ── PLATFORMS ── -->
+    <div class="screen" id="s-platforms">
+      <div class="page-head">
+        <div><h1>Platforms</h1><p>3 connected with live data · others are guide-only — see why below</p></div>
+        <div class="filter-row"><button class="ftab on" onclick="fp('all',this)">All</button><button class="ftab" onclick="fp('live',this)">Live data</button><button class="ftab" onclick="fp('guide',this)">Guide only</button></div>
+      </div>
+      <p style="font-size:12.5px;color:#94a3b8;margin:-6px 0 16px;max-width:640px">Upwork, Fiverr, LinkedIn, Freelancer, Indeed, Toptal, Guru and Wellfound don't offer free, instant public APIs for reading their job listings — most require an approved partner relationship, and Fiverr has no public API at all. For those, this app gives you real strategy guides (see the Guides tab) instead of pretending to scan them live.</p>
+      <div class="pgrid" id="pgrid">
+        <div class="pcard" data-c="live"><div class="pc-top"><div class="pc-logo" style="background:linear-gradient(135deg,#7c3aed,#5b21b6)">Re</div><div class="pc-info"><div class="pc-name">Remotive</div><div class="pc-type">Remote job board</div></div><div class="pc-right"><div class="pc-jobs">Free API</div><div class="pc-live">Live</div></div></div><p class="pc-desc">Real, free, keyless API. The agent queries this directly for remote and freelance-friendly roles.</p></div>
+        <div class="pcard" data-c="live"><div class="pc-top"><div class="pc-logo" style="background:linear-gradient(135deg,#111827,#374151)">OK</div><div class="pc-info"><div class="pc-name">RemoteOK</div><div class="pc-type">Remote job board</div></div><div class="pc-right"><div class="pc-jobs">Free API</div><div class="pc-live">Live</div></div></div><p class="pc-desc">Real, free, keyless API covering remote tech roles with tags and salary ranges.</p></div>
+        <div class="pcard" data-c="live"><div class="pc-top"><div class="pc-logo" style="background:linear-gradient(135deg,#0ea5e9,#0369a1)">Ar</div><div class="pc-info"><div class="pc-name">Arbeitnow</div><div class="pc-type">Job board</div></div><div class="pc-right"><div class="pc-jobs">Free API</div><div class="pc-live">Live</div></div></div><p class="pc-desc">Real, free, keyless API with a mix of remote and on-site listings, many freelance-friendly.</p></div>
+        <div class="pcard" data-c="guide"><div class="pc-top"><div class="pc-logo" style="background:linear-gradient(135deg,#6fda44,#4a9e2a)">U</div><div class="pc-info"><div class="pc-name">Upwork</div><div class="pc-type">Freelancing</div></div><div class="pc-right"><div class="pc-jobs">No public API</div><div class="pc-live" style="background:#f1f5f9;color:#64748b">Guide only</div></div></div><p class="pc-desc">Requires approved partner/agency access to search jobs via API. See the Upwork guide for how to win work there manually.</p></div>
+        <div class="pcard" data-c="guide"><div class="pc-top"><div class="pc-logo" style="background:linear-gradient(135deg,#1dbf73,#0f9f5b)">F</div><div class="pc-info"><div class="pc-name">Fiverr</div><div class="pc-type">Gig marketplace</div></div><div class="pc-right"><div class="pc-jobs">No public API</div><div class="pc-live" style="background:#f1f5f9;color:#64748b">Guide only</div></div></div><p class="pc-desc">Fiverr has no public API for gigs or buyer requests. See the Fiverr guide instead.</p></div>
+        <div class="pcard" data-c="guide"><div class="pc-top"><div class="pc-logo" style="background:linear-gradient(135deg,#0a66c2,#064e96)">in</div><div class="pc-info"><div class="pc-name">LinkedIn</div><div class="pc-type">Professional network</div></div><div class="pc-right"><div class="pc-jobs">Partner API only</div><div class="pc-live" style="background:#f1f5f9;color:#64748b">Guide only</div></div></div><p class="pc-desc">Jobs API access requires LinkedIn's partner approval process. See the LinkedIn guide instead.</p></div>
+        <div class="pcard" data-c="guide"><div class="pc-top"><div class="pc-logo" style="background:linear-gradient(135deg,#29b2fe,#0080cc)">Fr</div><div class="pc-info"><div class="pc-name">Freelancer.com</div><div class="pc-type">Project bidding</div></div><div class="pc-right"><div class="pc-jobs">Limited API</div><div class="pc-live" style="background:#f1f5f9;color:#64748b">Guide only</div></div></div><p class="pc-desc">Has an API, but it's built for their own affiliates with restricted access — not open project search.</p></div>
+        <div class="pcard" data-c="guide"><div class="pc-top"><div class="pc-logo" style="background:linear-gradient(135deg,#003a9b,#001f66)">In</div><div class="pc-info"><div class="pc-name">Indeed</div><div class="pc-type">Job board</div></div><div class="pc-right"><div class="pc-jobs">Publisher program</div><div class="pc-live" style="background:#f1f5f9;color:#64748b">Guide only</div></div></div><p class="pc-desc">Indeed's Publisher API requires application/approval; not wired in by default here.</p></div>
+        <div class="pcard" data-c="guide"><div class="pc-top"><div class="pc-logo" style="background:linear-gradient(135deg,#204ecf,#1a3fa8)">To</div><div class="pc-info"><div class="pc-name">Toptal</div><div class="pc-type">Elite talent</div></div><div class="pc-right"><div class="pc-jobs">No public API</div><div class="pc-live" style="background:#f1f5f9;color:#64748b">Guide only</div></div></div><p class="pc-desc">Toptal is invite/screening-based with no public job-search API.</p></div>
+      </div>
+    </div>
+
+    <!-- ── AI AGENT ── -->
+    <div class="screen" id="s-agent">
+      <div class="page-head"><div><h1>AI Agent Chat</h1><p>Ask anything about jobs, platforms, CVs and proposals — 24/7</p></div><button class="btn-outline" onclick="clearChat()">Clear chat</button></div>
+      <div class="chat-layout">
+        <div class="chat-topics">
+          <div class="ct-label">Quick topics</div>
+          <button class="ctbtn" onclick="askT('How do I get my first job on Upwork?')"><span class="ctd" style="background:#6fda44"></span>Get started on Upwork</button>
+          <button class="ctbtn" onclick="askT('How do I create a winning Fiverr gig?')"><span class="ctd" style="background:#1dbf73"></span>Create a Fiverr gig</button>
+          <button class="ctbtn" onclick="askT('How do I optimise my LinkedIn profile?')"><span class="ctd" style="background:#0a66c2"></span>LinkedIn profile tips</button>
+          <button class="ctbtn" onclick="askT('How do I make a great CV?')"><span class="ctd" style="background:#7c3aed"></span>Write a great CV</button>
+          <button class="ctbtn" onclick="askT('How do I write a winning proposal?')"><span class="ctd" style="background:#f857a6"></span>Write winning proposals</button>
+          <button class="ctbtn" onclick="askT('What freelance rate should I charge?')"><span class="ctd" style="background:#f59e0b"></span>Set my freelance rate</button>
+          <button class="ctbtn" onclick="askT('Find me remote Python developer jobs now')"><span class="ctd" style="background:#22c55e"></span>Find matching jobs</button>
+          <button class="ctbtn" onclick="askT('How does the ML job matching work?')"><span class="ctd" style="background:#06b6d4"></span>How ML matching works</button>
+        </div>
+        <div class="chat-window">
+          <div class="cw-header"><div class="cw-av">🤖</div><div class="cw-av-info"><div class="cw-name">Jobsk AI Agent</div><div class="cw-status"><span class="online-dot"></span>Online</div></div></div>
+          <div class="chat-msgs" id="chatMsgs"><div class="cmsg bot"><div class="cmsg-bbl">Hi! I'm the Jobsk AI agent. I can help you find jobs, improve your CV, write better proposals, and give detailed tips on every major freelancing platform.<br/><br/>What would you like help with today?</div></div></div>
+          <div class="chat-inp-row"><input type="text" class="chat-inp" id="chatInp" placeholder="Ask anything about jobs, platforms, or your career..." onkeypress="if(event.key==='Enter')sendChat()"/><button class="chat-send" onclick="sendChat()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg></button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CV ── -->
+    <div class="screen" id="s-cv">
+      <div class="page-head"><div><h1>My CV</h1><p>Upload your CV — real PDF/DOCX/TXT reading + TF-IDF skill matching, not a canned demo</p></div></div>
+      <div class="cv-zone" id="cvZone" onclick="document.getElementById('cvMain').click()" ondragover="event.preventDefault();this.classList.add('dv')" ondragleave="this.classList.remove('dv')" ondrop="cvMainDrop(event)">
+        <div class="cvz-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6c63ff" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></div>
+        <div class="cvz-t">Drop your CV here or click to upload</div>
+        <div class="cvz-s">PDF, DOCX, or TXT — skills are extracted and saved to your account</div>
+        <input type="file" id="cvMain" accept=".pdf,.docx,.txt" style="display:none" onchange="cvMainFile(event)"/>
+      </div>
+      <div class="sec-title">Skills detected from your CV</div>
+      <div class="skills-row" id="cvSkillsRow">
+        <span class="sk" style="background:#f1f5f9;color:#64748b">No CV uploaded yet</span>
+      </div>
+      <div class="sec-title">Match score</div>
+      <div class="score-box">
+        <div class="score-top"><span>Overall match quality</span><span class="score-num" id="cvScoreNum">—</span></div>
+        <div class="score-bar"><div class="score-fill" id="cvScoreFill" style="width:0%"></div></div>
+        <p class="score-tip" id="cvScoreTip">Upload a CV above to see your real skill count and match readiness.</p>
+      </div>
+    </div>
+
+    <!-- ── ALERTS ── -->
+    <div class="screen" id="s-alerts">
+      <div class="page-head"><div><h1>Job Alerts</h1><p>Real email (and optional SMS) notifications sent by the background agent — even when this app is closed, as long as the backend server is running (see README)</p></div></div>
+      <div class="block-card">
+        <div class="sec-title">Alert settings</div>
+        <div class="form-2col">
+          <div class="fg"><label class="fl">Alert keywords</label><input class="fi" id="setAlertKeywords" placeholder="Python, Machine Learning, Data Science"/></div>
+          <div class="fg"><label class="fl">Minimum rate ($/hr)</label><input class="fi" id="setAlertMinRate" type="number" value="0"/></div>
+          <div class="fg"><label class="fl">Alerts enabled</label>
+            <select class="fi" id="setAlertEnabled"><option value="true">On — email me new matches</option><option value="false">Off</option></select>
+          </div>
+          <div class="fg"><label class="fl">Also text me (optional)</label>
+            <select class="fi" id="setAlertSms"><option value="false">Off</option><option value="true">On — see Twilio/carrier setup in README</option></select>
+          </div>
+          <div class="fg"><label class="fl">Phone for SMS</label><input class="fi" id="setAlertPhone" placeholder="+1 555 123 4567"/></div>
+        </div>
+        <button class="btn-primary" onclick="saveAlertSettings()">Save alert settings</button>
+      </div>
+      <div class="sec-title" style="margin-top:28px">Recent notifications</div>
+      <div class="alert-list" id="alertList">
+        <div class="alert-row"><div class="al-info"><div class="al-title">No alerts sent yet</div><div class="al-meta">Upload a CV and enable alerts to get started</div></div></div>
+      </div>
+    </div>
+
+    <!-- ── GUIDES ── -->
+    <div class="screen" id="s-guides">
+      <div class="page-head"><div><h1>Platform Guides</h1><p>Complete step-by-step guides to getting hired on every major platform</p></div></div>
+      <div class="guides-grid">
+        <div class="gcard" onclick="openGuide('fiverr')"><div class="gbar" style="background:#1dbf73"></div><div class="gbody"><div class="glogo" style="background:#1dbf73">F</div><span class="gtag" style="background:#dcfce7;color:#166534">Fiverr</span><h3>Getting started on Fiverr</h3><p>Create your first gig, price it right, win your first order — complete guide</p><div class="gfooter"><span>📖 8 min</span><span class="gpop">⭐ Most popular</span></div><div class="gread">Read full guide →</div></div></div>
+        <div class="gcard" onclick="openGuide('upwork')"><div class="gbar" style="background:#6fda44"></div><div class="gbody"><div class="glogo" style="background:#6fda44">U</div><span class="gtag" style="background:#f0fdf4;color:#15803d">Upwork</span><h3>Winning on Upwork</h3><p>Proposals that win, rates that get accepted, how to land your first contract</p><div class="gfooter"><span>📖 10 min</span><span class="gpop">🔥 Trending</span></div><div class="gread">Read full guide →</div></div></div>
+        <div class="gcard" onclick="openGuide('linkedin')"><div class="gbar" style="background:#0a66c2"></div><div class="gbody"><div class="glogo" style="background:#0a66c2">in</div><span class="gtag" style="background:#eff6ff;color:#1d4ed8">LinkedIn</span><h3>Getting hired on LinkedIn</h3><p>Profile optimisation, recruiter outreach, turning views into interviews</p><div class="gfooter"><span>📖 7 min</span></div><div class="gread">Read full guide →</div></div></div>
+        <div class="gcard" onclick="openGuide('freelancer')"><div class="gbar" style="background:#29b2fe"></div><div class="gbody"><div class="glogo" style="background:#29b2fe">Fr</div><span class="gtag" style="background:#f0f9ff;color:#0369a1">Freelancer</span><h3>Freelancer.com success</h3><p>Bidding strategy, winning contests, building your review base from zero</p><div class="gfooter"><span>📖 6 min</span></div><div class="gread">Read full guide →</div></div></div>
+        <div class="gcard" onclick="openGuide('cv')"><div class="gbar" style="background:#7c3aed"></div><div class="gbody"><div class="glogo" style="background:#7c3aed">CV</div><span class="gtag" style="background:#f5f3ff;color:#6d28d9">CV Tips</span><h3>Make a perfect CV</h3><p>What ML reads, what to include, the format that wins interviews</p><div class="gfooter"><span>📖 5 min</span></div><div class="gread">Read full guide →</div></div></div>
+        <div class="gcard" onclick="openGuide('proposal')"><div class="gbar" style="background:#f857a6"></div><div class="gbody"><div class="glogo" style="background:#f857a6">✍</div><span class="gtag" style="background:#fdf2f8;color:#9d174d">Proposals</span><h3>Write winning proposals</h3><p>Templates, examples, the exact structure that makes clients reply</p><div class="gfooter"><span>📖 6 min</span></div><div class="gread">Read full guide →</div></div></div>
+      </div>
+    </div>
+
+    <!-- ── NOTIFICATIONS ── -->
+    <div class="screen" id="s-notifications">
+      <div class="page-head"><div><h1>Notifications</h1><p id="notifSubHead">Real events from your account — CV analysis, new matches, alerts sent</p></div><button class="btn-outline" onclick="markAllRead()">Mark all read</button></div>
+      <div class="notif-list" id="notifList">
+        <div class="nitem"><div class="ni-body"><div class="ni-t">No notifications yet</div><div class="ni-p">Upload a CV and run a search to start generating real activity here.</div></div></div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div class="screen" id="s-settings">
+      <div class="page-head"><div><h1>Settings</h1><p>Manage your profile, agent preferences, and connected accounts</p></div></div>
+      <div class="settings-grid">
+        <div class="block-card">
+          <div class="sec-title">Profile</div>
+          <div class="fg"><label class="fl">Full name</label><input class="fi" id="setName"/></div>
+          <div class="fg"><label class="fl">Email address</label><input class="fi" id="setEmail" type="email"/></div>
+          <div class="fg"><label class="fl">Skills</label><input class="fi" id="setSkills" placeholder="Python, Machine Learning, Data Science"/></div>
+          <div class="fg"><label class="fl">New password</label><input class="fi" id="setPassword" type="password" placeholder="Leave blank to keep current"/></div>
+          <button class="btn-primary" onclick="saveProfile()">Save profile</button>
+        </div>
+        <div class="block-card">
+          <div class="sec-title">Agent preferences</div>
+          <div class="fg"><label class="fl">Minimum rate ($/hr)</label><input class="fi" id="setAgentMinRate" type="number" value="0"/></div>
+          <div class="fg"><label class="fl">Preferred job type</label>
+            <select class="fi" id="setAgentJobType">
+              <option value="all">All types</option>
+              <option value="remote">Remote only</option>
+              <option value="hourly">Hourly</option>
+              <option value="fixed">Fixed price</option>
+              <option value="full-time">Full-time</option>
+            </select>
+          </div>
+          <div class="fg"><label class="fl">Scan frequency (minutes)</label><input class="fi" id="setScanMinutes" type="number" min="1" value="1"/></div>
+          <button class="btn-primary" onclick="saveAgentPrefs()">Save agent settings</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SEARCH HISTORY ── -->
+    <div class="screen" id="s-history">
+      <div class="page-head"><div><h1>Search History</h1><p>Every search you've made, saved automatically to your account</p></div><button class="btn-outline" onclick="clearHistory()">Clear history</button></div>
+      <div class="history-list" id="historyList">
+        <div class="hist-row"><div class="hist-info"><div class="hist-query">No searches yet</div><div class="hist-meta">Run a search to see it appear here</div></div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- GUIDE MODAL -->
+<div class="modal" id="modal" onclick="closeModal(event)"><div class="modal-box"><button class="modal-x" onclick="closeModalDirect()">✕</button><div id="modal-body"></div></div></div>
+
+<!-- TOAST -->
+<div class="toasts" id="toasts"></div>
+
+<script src="js/config.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

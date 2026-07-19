@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%236c63ff%27/%3E%3Ctext x=%2750%27 y=%2768%27 font-size=%2760%27 font-family=%27Arial,sans-serif%27 font-weight=%27700%27 fill=%27white%27 text-anchor=%27middle%27%3EJ%3C/text%3E%3C/svg%3E"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign In — Jobsk</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>body{overflow:auto;height:auto}</style>
+</head>
+<body>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+
+    <div class="auth-logo-area">
+      <div class="auth-logo-row">
+        <div class="logo-box">
+          <svg width="34" height="34" viewBox="0 0 36 36">
+            <defs><linearGradient id="lgAuth" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#6c63ff"/><stop offset="100%" stop-color="#f857a6"/></linearGradient></defs>
+            <rect width="36" height="36" rx="10" fill="url(#lgAuth)"/>
+            <text x="18" y="25" text-anchor="middle" font-family="Inter,sans-serif" font-weight="800" font-size="18" fill="white">J</text>
+          </svg>
+        </div>
+        <div class="logo-name">job<span>sk</span></div>
+      </div>
+      <p>AI-powered job matching platform</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabSignin" onclick="showTab('signin')">Sign in</button>
+      <button class="auth-tab" id="tabSignup" onclick="showTab('signup')">Create account</button>
+    </div>
+
+    <div class="auth-msg error" id="authError"></div>
+    <div class="auth-msg success" id="authSuccess"></div>
+
+    <!-- ════════ SIGN IN FORM ════════ -->
+    <div id="formSignin">
+      <div class="auth-form">
+        <div class="login-method-tabs">
+          <button class="lm-tab active" onclick="setLoginMethod('email',this)">Email</button>
+          <button class="lm-tab" onclick="setLoginMethod('phone',this)">Phone</button>
+        </div>
+
+        <div class="fg" id="siEmailGroup">
+          <label class="fl">Email address</label>
+          <input class="fi" type="email" id="siEmail" placeholder="your@email.com"/>
+        </div>
+        <div class="fg" id="siPhoneGroup" style="display:none">
+          <label class="fl">Phone number</label>
+          <input class="fi" type="tel" id="siPhone" placeholder="+92 300 1234567"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Password</label>
+          <input class="fi" type="password" id="siPassword" placeholder="Your password"/>
+        </div>
+        <div class="fg-row">
+          <label class="checkbox-row"><input type="checkbox" id="rememberMe"/> Remember me</label>
+          <a class="forgot-link" onclick="forgotPassword()">Forgot password?</a>
+        </div>
+        <button class="auth-submit" onclick="doSignIn()">Sign in to Jobsk</button>
+        <p style="text-align:center;font-size:12px;color:#94a3b8">
+          No account? <a onclick="showTab('signup')" style="color:#6c63ff;cursor:pointer;font-weight:600">Create one free →</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- ════════ SIGN UP FORM ════════ -->
+    <div id="formSignup" style="display:none">
+      <div class="auth-form">
+        <div class="fg">
+          <label class="fl">Full name</label>
+          <input class="fi" type="text" id="suName" placeholder="Your full name"/>
+        </div>
+
+        <div class="fg-2col">
+          <div class="fg">
+            <label class="fl">Email address</label>
+            <input class="fi" type="email" id="suEmail" placeholder="your@email.com"/>
+          </div>
+          <div class="fg">
+            <label class="fl">Phone number</label>
+            <input class="fi" type="tel" id="suPhone" placeholder="+92 300 1234567"/>
+          </div>
+        </div>
+
+        <div class="fg">
+          <label class="fl">Date of birth</label>
+          <input class="fi" type="date" id="suDob" max="2012-12-31"/>
+          <span class="field-hint">You must be 16 or older to use Jobsk</span>
+        </div>
+
+        <div class="fg">
+          <label class="fl">Password</label>
+          <input class="fi" type="password" id="suPassword" placeholder="At least 8 characters"/>
+        </div>
+
+        <div class="fg">
+          <label class="fl">Your main skills</label>
+          <input class="fi" type="text" id="suSkills" placeholder="e.g. Python, Machine Learning"/>
+        </div>
+
+        <label class="checkbox-row">
+          <input type="checkbox" id="agreeTerms"/>
+          I agree to the Terms of Service and Privacy Policy
+        </label>
+
+        <button class="auth-submit" onclick="doSignUp()">Create free account</button>
+        <p style="text-align:center;font-size:12px;color:#94a3b8">
+          Already have an account? <a onclick="showTab('signin')" style="color:#6c63ff;cursor:pointer;font-weight:600">Sign in →</a>
+        </p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth.js"></script>
+</body>
+</html>

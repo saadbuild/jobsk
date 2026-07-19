@@ -1,0 +1,15 @@
+flask==3.0.0
+flask-cors==4.0.0
+python-dotenv==1.0.0
+requests==2.31.0
+google-auth==2.27.0
+SQLAlchemy==2.0.30
+APScheduler==3.10.4
+scikit-learn==1.5.0
+pypdf==5.1.0
+python-docx==1.1.2
+twilio==9.2.3
+# Optional — only needed if you set ANTHROPIC_API_KEY for a real LLM chatbot:
+anthropic==0.34.2
+# Optional — only needed if you set DATABASE_URL to a Postgres connection string:
+psycopg2-binary==2.9.9

@@ -35,7 +35,7 @@ import sys
 # those imports to resolve, both locally and on Vercel.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory, abort
 from flask_cors import CORS
 
 from models import init_db
@@ -383,6 +383,34 @@ def cron_run_alerts():
 
 
 # ─────────────────────────────────────────────
+# FRONTEND (public/) — serve index.html, css/js, and pages/*
+# Vercel routes ALL non-static-CDN traffic to this one Flask function,
+# and this file previously only defined /api/... routes — so "/" and
+# every other page (pages/login.html, css/style.css, ...) 404'd with
+# Flask's own default error page. These two routes fix that by having
+# Flask serve the public/ folder directly. Registered after every
+# /api/... route above, but that's just for readability: Flask/Werkzeug
+# always matches the most specific rule first regardless of order, so
+# this catch-all can never shadow an /api/... endpoint.
+# ─────────────────────────────────────────────
+
+PUBLIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "public")
+
+
+@app.route("/")
+def serve_index():
+    return send_from_directory(PUBLIC_DIR, "index.html")
+
+
+@app.route("/<path:filename>")
+def serve_public_file(filename):
+    full_path = os.path.join(PUBLIC_DIR, filename)
+    if not os.path.isfile(full_path):
+        abort(404)
+    return send_from_directory(PUBLIC_DIR, filename)
+
+
+# ─────────────────────────────────────────────
 # HEALTH CHECK
 # ─────────────────────────────────────────────
 
@@ -409,3 +437,4 @@ if __name__ == "__main__":
     print("  Visit: http://127.0.0.1:5000")
     print("=" * 50)
     app.run(debug=True, port=5000, use_reloader=False)
+

@@ -394,12 +394,60 @@ def cron_run_alerts():
 # this catch-all can never shadow an /api/... endpoint.
 # ─────────────────────────────────────────────
 
-PUBLIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "public")
+def _find_public_dir():
+    """Vercel's exact cwd/__file__ layout for Python functions isn't
+    something we can fully verify without a live deploy, so try every
+    layout that's actually plausible instead of hardcoding one guess."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        os.path.join(here, "..", "public"),   # backend/../public (repo layout)
+        os.path.join(os.getcwd(), "public"),  # cwd/public
+        os.path.join(here, "public"),         # backend/public
+        os.path.join(os.getcwd(), "backend", "..", "public"),
+        "/var/task/public",                   # raw AWS Lambda-style path Vercel sometimes uses
+    ]
+    for c in candidates:
+        c = os.path.abspath(c)
+        if os.path.isfile(os.path.join(c, "index.html")):
+            return c
+    return os.path.abspath(candidates[0])  # best guess, used for the debug output below
+
+
+PUBLIC_DIR = _find_public_dir()
+
+
+def _debug_info():
+    here = os.path.dirname(os.path.abspath(__file__))
+    def ls(p):
+        try:
+            return os.listdir(p)
+        except Exception as e:
+            return f"<error: {e}>"
+    return {
+        "__file__": os.path.abspath(__file__),
+        "cwd": os.getcwd(),
+        "resolved_PUBLIC_DIR": PUBLIC_DIR,
+        "PUBLIC_DIR_exists": os.path.isdir(PUBLIC_DIR),
+        "PUBLIC_DIR_has_index_html": os.path.isfile(os.path.join(PUBLIC_DIR, "index.html")),
+        "listing_of_backend_dir": ls(here),
+        "listing_of_repo_root_guess": ls(os.path.abspath(os.path.join(here, ".."))),
+        "listing_of_cwd": ls(os.getcwd()),
+    }
 
 
 @app.route("/")
 def serve_index():
+    index_path = os.path.join(PUBLIC_DIR, "index.html")
+    if not os.path.isfile(index_path):
+        # Don't just 404 silently — this tells us in one request exactly
+        # where Vercel actually put the files at runtime, no guessing.
+        return jsonify({"error": "index.html not found", "debug": _debug_info()}), 500
     return send_from_directory(PUBLIC_DIR, "index.html")
+
+
+@app.route("/api/debug/paths")
+def debug_paths():
+    return jsonify(_debug_info())
 
 
 @app.route("/<path:filename>")
@@ -437,4 +485,3 @@ if __name__ == "__main__":
     print("  Visit: http://127.0.0.1:5000")
     print("=" * 50)
     app.run(debug=True, port=5000, use_reloader=False)
-

@@ -35,7 +35,7 @@ import sys
 # those imports to resolve, both locally and on Vercel.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from flask import Flask, request, jsonify, send_from_directory, abort
+from flask import Flask, request, jsonify, send_from_directory, abort, redirect
 from flask_cors import CORS
 
 from models import init_db
@@ -437,12 +437,7 @@ def _debug_info():
 
 @app.route("/")
 def serve_index():
-    index_path = os.path.join(PUBLIC_DIR, "index.html")
-    if not os.path.isfile(index_path):
-        # Don't just 404 silently — this tells us in one request exactly
-        # where Vercel actually put the files at runtime, no guessing.
-        return jsonify({"error": "index.html not found", "debug": _debug_info()}), 500
-    return send_from_directory(PUBLIC_DIR, "index.html")
+    return redirect("/index.html")
 
 
 @app.route("/api/debug/paths")
